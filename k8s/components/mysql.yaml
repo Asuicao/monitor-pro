@@ -1,0 +1,56 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: iflow-monitor
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mysql-secret
+  namespace: iflow-monitor
+type: Opaque
+data:
+  root_password: aWZsb3cyMDI2
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql
+  namespace: iflow-monitor
+spec:
+  ports:
+    - port: 3306
+  selector:
+    app: mysql
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql
+  namespace: iflow-monitor
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysql
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      containers:
+        - name: mysql
+          image: docker.1ms.run/mysql:8.0
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              value: iflow2026
+            - name: MYSQL_DATABASE
+              value: iflow_monitor
+          ports:
+            - containerPort: 3306
+          volumeMounts:
+            - name: mysql-data
+              mountPath: /var/lib/mysql
+      volumes:
+        - name: mysql-data
+          emptyDir: {}
